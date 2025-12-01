@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: linear-gradient(to bottom, #87ceeb 0%, #e0f6ff 100%);
+  min-height: 100vh;
+  transition: background-color 0.3s ease;
+}
+
+body.dark {
+  background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 100%);
+}
+
