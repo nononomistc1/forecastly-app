@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import SearchBar from '@/components/SearchBar';
 import CurrentWeather from '@/components/CurrentWeather';
 import Forecast from '@/components/Forecast';
@@ -25,6 +25,7 @@ export default function Home() {
   const [favorites, setFavorites] = useState<FavoriteCity[]>([]);
   const [isFavoritesExpanded, setIsFavoritesExpanded] = useState<boolean>(true);
   const [isSettingsExpanded, setIsSettingsExpanded] = useState<boolean>(false);
+  const favoriteToggleRef = useRef<boolean>(false);
 
   const API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
 
@@ -336,6 +337,10 @@ export default function Home() {
 
   const handleToggleFavorite = () => {
     if (!weather) return;
+    
+    // Prevent rapid double-taps on mobile
+    if (favoriteToggleRef.current) return;
+    favoriteToggleRef.current = true;
 
     const cityId = getCityId(weather.name, weather.sys.country, weather.coord.lat, weather.coord.lon);
     const isFavorite = favorites.some(fav => fav.id === cityId);
@@ -352,6 +357,11 @@ export default function Home() {
       };
       setFavorites(prevFavorites => [...prevFavorites, newFavorite]);
     }
+
+    // Reset the ref after a short delay to allow the next toggle
+    setTimeout(() => {
+      favoriteToggleRef.current = false;
+    }, 300);
   };
 
   const handleSelectFavorite = (city: FavoriteCity) => {

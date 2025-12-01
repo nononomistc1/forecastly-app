@@ -107,11 +107,20 @@ export default function CurrentWeather({ weather, unit, speedUnit, darkMode, isF
           </button>
         )}
         <button
-          onClick={onToggleFavorite}
-          className={`absolute top-0 right-0 p-2 rounded-lg transition-colors ${
-            darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onToggleFavorite();
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+          }}
+          style={{ touchAction: 'manipulation' }}
+          className={`absolute top-0 right-0 p-3 min-w-[44px] min-h-[44px] rounded-lg transition-colors z-10 ${
+            darkMode ? 'hover:bg-gray-700 active:bg-gray-600' : 'hover:bg-gray-100 active:bg-gray-200'
           }`}
           aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+          type="button"
         >
           <span className={`text-3xl ${isFavorite ? 'text-yellow-500' : textSecondary}`}>
             {isFavorite ? '★' : '☆'}
