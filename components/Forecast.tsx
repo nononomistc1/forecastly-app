@@ -1,6 +1,8 @@
 'use client';
 
 import { DailyForecast } from '@/types/weather';
+import { convertTemp, getTempSymbol } from '@/utils/weather';
+import { getDarkModeClasses } from '@/utils/styles';
 
 interface ForecastProps {
   forecast: DailyForecast[];
@@ -10,15 +12,11 @@ interface ForecastProps {
 }
 
 export default function Forecast({ forecast, unit, onDayClick, darkMode }: ForecastProps) {
-  const convertTemp = (temp: number): number => {
-    return unit === 'fahrenheit' ? (temp * 9) / 5 + 32 : temp;
-  };
+  const styles = getDarkModeClasses(darkMode);
+  const tempSymbol = getTempSymbol(unit);
 
-  const tempSymbol = unit === 'fahrenheit' ? '°F' : '°C';
-
-  const bgClass = darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900';
-  const textPrimary = darkMode ? 'text-white' : 'text-gray-800';
-  const textSecondary = darkMode ? 'text-gray-300' : 'text-gray-600';
+  const bgClass = darkMode ? `${styles.bg} text-white` : `${styles.bg} text-gray-900`;
+  const { textPrimary, textSecondary } = styles;
   const hoverClass = darkMode ? 'hover:shadow-xl hover:bg-gray-700' : 'hover:shadow-lg hover:bg-gray-50';
 
   return (
@@ -49,13 +47,13 @@ export default function Forecast({ forecast, unit, onDayClick, darkMode }: Forec
               <div className="flex justify-center items-center gap-2 text-sm">
                 <span className={`text-xs ${textSecondary}`}>High:</span>
                 <span className={`font-semibold ${textPrimary}`}>
-                  {Math.round(convertTemp(day.high))}{tempSymbol}
+                  {Math.round(convertTemp(day.high, unit))}{tempSymbol}
                 </span>
               </div>
               <div className="flex justify-center items-center gap-2 text-sm">
                 <span className={`text-xs ${textSecondary}`}>Low:</span>
                 <span className={textSecondary}>
-                  {Math.round(convertTemp(day.low))}{tempSymbol}
+                  {Math.round(convertTemp(day.low, unit))}{tempSymbol}
                 </span>
               </div>
             </div>

@@ -1,6 +1,8 @@
 'use client';
 
 import { WeatherData } from '@/types/weather';
+import { convertTemp, getTempSymbol, convertWindSpeed, formatDate, formatTime, getAqiLabel, getAqiColor, getUvLabel, getUvColor } from '@/utils/weather';
+import { getDarkModeClasses } from '@/utils/styles';
 
 interface CurrentWeatherProps {
   weather: WeatherData;
@@ -14,79 +16,14 @@ interface CurrentWeatherProps {
 }
 
 export default function CurrentWeather({ weather, unit, speedUnit, darkMode, onViewHourly, hasHourlyData, aqi, uvIndex }: CurrentWeatherProps) {
-  const convertTemp = (temp: number): number => {
-    return unit === 'fahrenheit' ? (temp * 9) / 5 + 32 : temp;
-  };
+  const styles = getDarkModeClasses(darkMode);
+  const temp = convertTemp(weather.main.temp, unit);
+  const feelsLike = convertTemp(weather.main.feels_like, unit);
+  const tempSymbol = getTempSymbol(unit);
+  const windSpeed = convertWindSpeed(weather.wind.speed, speedUnit);
 
-  const formatDate = (timestamp: number): string => {
-    const date = new Date(timestamp * 1000);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  const formatTime = (timestamp: number): string => {
-    const date = new Date(timestamp * 1000);
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const formatSunTime = (timestamp: number): string => {
-    const date = new Date(timestamp * 1000);
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    });
-  };
-
-  const getAqiLabel = (aqi: number | null | undefined): string => {
-    if (!aqi) return 'Unknown';
-    const labels = ['Good', 'Fair', 'Moderate', 'Poor', 'Very Poor'];
-    return labels[aqi - 1] || 'Unknown';
-  };
-
-  const getAqiColor = (aqi: number | null | undefined): string => {
-    if (!aqi) return 'text-gray-500';
-    const colors = ['text-green-500', 'text-yellow-500', 'text-orange-500', 'text-red-500', 'text-purple-500'];
-    return colors[aqi - 1] || 'text-gray-500';
-  };
-
-  const getUvLabel = (uv: number | null | undefined): string => {
-    if (!uv) return 'Unknown';
-    if (uv <= 2) return 'Low';
-    if (uv <= 5) return 'Moderate';
-    if (uv <= 7) return 'High';
-    if (uv <= 10) return 'Very High';
-    return 'Extreme';
-  };
-
-  const getUvColor = (uv: number | null | undefined): string => {
-    if (!uv) return 'text-gray-500';
-    if (uv <= 2) return 'text-green-500';
-    if (uv <= 5) return 'text-yellow-500';
-    if (uv <= 7) return 'text-orange-500';
-    if (uv <= 10) return 'text-red-500';
-    return 'text-purple-500';
-  };
-
-  const temp = convertTemp(weather.main.temp);
-  const feelsLike = convertTemp(weather.main.feels_like);
-  const tempSymbol = unit === 'fahrenheit' ? '°F' : '°C';
-  const windSpeed = speedUnit === 'mph' 
-    ? (weather.wind.speed * 2.237).toFixed(1) + ' mph'
-    : (weather.wind.speed * 3.6).toFixed(1) + ' km/h';
-
-  const bgClass = darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900';
-  const textPrimary = darkMode ? 'text-white' : 'text-gray-800';
-  const textSecondary = darkMode ? 'text-gray-300' : 'text-gray-600';
-  const textTertiary = darkMode ? 'text-gray-400' : 'text-gray-500';
-  const bgCard = darkMode ? 'bg-gray-700' : 'bg-gray-50';
+  const bgClass = darkMode ? `${styles.bg} text-white` : `${styles.bg} text-gray-900`;
+  const { textPrimary, textSecondary, textTertiary, bgCard } = styles;
 
   return (
     <div className={`${bgClass} rounded-xl shadow-lg p-6 mb-8`}>
@@ -108,7 +45,7 @@ export default function CurrentWeather({ weather, unit, speedUnit, darkMode, onV
           {weather.name}, {weather.sys.country}
         </h2>
         <p className={`${textSecondary} text-sm`}>
-          {formatDate(weather.dt)} • {formatTime(weather.dt)}
+          {formatDate(weather.dt)} • {formatTime(weather.dt, false)}
         </p>
       </div>
 
@@ -168,13 +105,13 @@ export default function CurrentWeather({ weather, unit, speedUnit, darkMode, onV
           <div className={`${bgCard} rounded-lg p-4 text-center`}>
             <div className={`text-sm mb-1 ${textSecondary}`}>Sunrise</div>
             <div className={`text-xl font-semibold ${textPrimary}`}>
-              {formatSunTime(weather.sys.sunrise)}
+              {formatTime(weather.sys.sunrise, true)}
             </div>
           </div>
           <div className={`${bgCard} rounded-lg p-4 text-center`}>
             <div className={`text-sm mb-1 ${textSecondary}`}>Sunset</div>
             <div className={`text-xl font-semibold ${textPrimary}`}>
-              {formatSunTime(weather.sys.sunset)}
+              {formatTime(weather.sys.sunset, true)}
             </div>
           </div>
         </div>

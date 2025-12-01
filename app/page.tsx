@@ -7,6 +7,7 @@ import Forecast from '@/components/Forecast';
 import DayDetailModal from '@/components/DayDetailModal';
 import SettingsMenu from '@/components/SettingsMenu';
 import { WeatherData, ForecastData, DailyForecast, ForecastItem } from '@/types/weather';
+import { calculateDailyAverages } from '@/utils/weather';
 
 export default function Home() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
@@ -84,25 +85,9 @@ export default function Home() {
       })
       .slice(0, 5);
     
-    const dates = futureDates;
-    
-    return dates.map((date, index) => {
+    return futureDates.map((date, index) => {
       const dayData = dailyData[date];
-      const temps = dayData.map((item) => item.main.temp);
-      const high = Math.max(...temps);
-      const low = Math.min(...temps);
-      
-      // Calculate averages for the day
-      const avgHumidity = Math.round(
-        dayData.reduce((sum, item) => sum + item.main.humidity, 0) / dayData.length
-      );
-      const avgWindSpeed = dayData.reduce((sum, item) => sum + item.wind.speed, 0) / dayData.length;
-      const avgPressure = Math.round(
-        dayData.reduce((sum, item) => sum + item.main.pressure, 0) / dayData.length
-      );
-      const avgCloudiness = Math.round(
-        dayData.reduce((sum, item) => sum + item.clouds.all, 0) / dayData.length
-      );
+      const averages = calculateDailyAverages(dayData);
       
       // Use the middle item of the day for icon/description
       const midIndex = Math.floor(dayData.length / 2);
@@ -118,14 +103,14 @@ export default function Home() {
           day: 'numeric',
         }),
         dayOfWeek,
-        high,
-        low,
+        high: averages.high,
+        low: averages.low,
         icon: midItem.weather[0].icon,
         description: midItem.weather[0].description,
-        humidity: avgHumidity,
-        windSpeed: avgWindSpeed,
-        pressure: avgPressure,
-        cloudiness: avgCloudiness,
+        humidity: averages.humidity,
+        windSpeed: averages.windSpeed,
+        pressure: averages.pressure,
+        cloudiness: averages.cloudiness,
         items: dayData,
       };
     });
@@ -227,20 +212,7 @@ export default function Home() {
       });
 
       if (todayItems.length > 0) {
-        const temps = todayItems.map((item) => item.main.temp);
-        const high = Math.max(...temps);
-        const low = Math.min(...temps);
-        const avgHumidity = Math.round(
-          todayItems.reduce((sum, item) => sum + item.main.humidity, 0) / todayItems.length
-        );
-        const avgWindSpeed = todayItems.reduce((sum, item) => sum + item.wind.speed, 0) / todayItems.length;
-        const avgPressure = Math.round(
-          todayItems.reduce((sum, item) => sum + item.main.pressure, 0) / todayItems.length
-        );
-        const avgCloudiness = Math.round(
-          todayItems.reduce((sum, item) => sum + item.clouds.all, 0) / todayItems.length
-        );
-        
+        const averages = calculateDailyAverages(todayItems);
         const midIndex = Math.floor(todayItems.length / 2);
         const midItem = todayItems[midIndex];
         const dateObj = new Date(midItem.dt * 1000);
@@ -251,14 +223,14 @@ export default function Home() {
             day: 'numeric',
           }),
           dayOfWeek: 'Today',
-          high,
-          low,
+          high: averages.high,
+          low: averages.low,
           icon: midItem.weather[0].icon,
           description: midItem.weather[0].description,
-          humidity: avgHumidity,
-          windSpeed: avgWindSpeed,
-          pressure: avgPressure,
-          cloudiness: avgCloudiness,
+          humidity: averages.humidity,
+          windSpeed: averages.windSpeed,
+          pressure: averages.pressure,
+          cloudiness: averages.cloudiness,
           items: todayItems,
         };
         
@@ -312,9 +284,6 @@ export default function Home() {
   const bgClass = darkMode ? 'bg-gray-900' : '';
   const textPrimary = darkMode ? 'text-white' : 'text-gray-800';
   const textSecondary = darkMode ? 'text-gray-300' : 'text-gray-600';
-  const buttonClass = darkMode
-    ? 'px-4 py-2 bg-gray-800 text-white rounded-lg shadow-md hover:shadow-lg hover:bg-gray-700 transition-all font-medium'
-    : 'px-4 py-2 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow font-medium text-gray-800';
 
   return (
     <main className={`min-h-screen py-8 px-4 transition-colors ${bgClass}`}>
@@ -358,6 +327,8 @@ export default function Home() {
               darkMode={darkMode}
               onViewHourly={handleTodayClick}
               hasHourlyData={todayForecast !== null}
+              aqi={aqi}
+              uvIndex={uvIndex}
             />
             {forecast.length > 0 && (
               <Forecast
