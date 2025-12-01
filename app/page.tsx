@@ -28,6 +28,24 @@ export default function Home() {
 
   const API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
 
+  // Load favorites from localStorage on mount
+  useEffect(() => {
+    const savedFavorites = localStorage.getItem('favorites');
+    if (savedFavorites) {
+      try {
+        const parsed = JSON.parse(savedFavorites);
+        setFavorites(parsed);
+      } catch (err) {
+        console.error('Error loading favorites:', err);
+      }
+    }
+  }, []);
+
+  // Save favorites to localStorage whenever favorites change
+  useEffect(() => {
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+  }, [favorites]);
+
   // Load dark mode preference from localStorage
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('darkMode');
@@ -312,14 +330,18 @@ export default function Home() {
     setSelectedDay(null);
   };
 
+  const getCityId = (name: string, country: string, lat: number, lon: number): string => {
+    return `${name}-${country}-${lat.toFixed(4)}-${lon.toFixed(4)}`;
+  };
+
   const handleToggleFavorite = () => {
     if (!weather) return;
 
-    const cityId = `${weather.name}-${weather.sys.country}-${weather.coord.lat}-${weather.coord.lon}`;
+    const cityId = getCityId(weather.name, weather.sys.country, weather.coord.lat, weather.coord.lon);
     const isFavorite = favorites.some(fav => fav.id === cityId);
 
     if (isFavorite) {
-      setFavorites(favorites.filter(fav => fav.id !== cityId));
+      setFavorites(prevFavorites => prevFavorites.filter(fav => fav.id !== cityId));
     } else {
       const newFavorite: FavoriteCity = {
         id: cityId,
@@ -328,7 +350,7 @@ export default function Home() {
         lat: weather.coord.lat,
         lon: weather.coord.lon,
       };
-      setFavorites([...favorites, newFavorite]);
+      setFavorites(prevFavorites => [...prevFavorites, newFavorite]);
     }
   };
 
@@ -337,16 +359,14 @@ export default function Home() {
   };
 
   const handleRemoveFavorite = (id: string) => {
-    setFavorites(favorites.filter(fav => fav.id !== id));
+    setFavorites(prevFavorites => prevFavorites.filter(fav => fav.id !== id));
   };
 
   const isCurrentCityFavorite = weather
-    ? favorites.some(fav => 
-        fav.name === weather.name && 
-        fav.country === weather.sys.country &&
-        Math.abs(fav.lat - weather.coord.lat) < 0.01 &&
-        Math.abs(fav.lon - weather.coord.lon) < 0.01
-      )
+    ? (() => {
+        const cityId = getCityId(weather.name, weather.sys.country, weather.coord.lat, weather.coord.lon);
+        return favorites.some(fav => fav.id === cityId);
+      })()
     : false;
 
   const bgClass = darkMode ? 'bg-gray-900' : '';
