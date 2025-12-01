@@ -110,12 +110,3 @@ export interface CitySuggestion {
   country: string;
   state?: string;
 }
-
-export interface FavoriteCity {
-  id: string;
-  name: string;
-  country: string;
-  state?: string;
-  lat: number;
-  lon: number;
-}

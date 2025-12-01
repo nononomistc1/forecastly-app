@@ -1,7 +1,5 @@
 'use client';
 
-import { WeatherData } from '@/types/weather';
-
 interface SettingsMenuProps {
   unit: 'celsius' | 'fahrenheit';
   speedUnit: 'kmh' | 'mph';
@@ -11,9 +9,6 @@ interface SettingsMenuProps {
   onDarkModeChange: (darkMode: boolean) => void;
   isExpanded: boolean;
   onToggleExpand: () => void;
-  isFavorite?: boolean;
-  onToggleFavorite?: () => void;
-  weather?: WeatherData | null;
 }
 
 export default function SettingsMenu({
@@ -25,9 +20,6 @@ export default function SettingsMenu({
   onDarkModeChange,
   isExpanded,
   onToggleExpand,
-  isFavorite = false,
-  onToggleFavorite,
-  weather,
 }: SettingsMenuProps) {
   const bgClass = darkMode ? 'bg-gray-800' : 'bg-white';
   const textPrimary = darkMode ? 'text-white' : 'text-gray-900';
@@ -143,38 +135,13 @@ export default function SettingsMenu({
       
       {/* Toggle button - visible on all screen sizes */}
       {!isExpanded && (
-        <>
-          <button
-            onClick={onToggleExpand}
-            className={`fixed right-0 top-4 z-50 p-3 ${bgClass} border-l border-b ${borderClass} rounded-l-lg shadow-lg ${hoverClass} transition-all`}
-            aria-label="Expand settings"
-          >
-            <span className={`text-xl ${textPrimary}`}>⚙️</span>
-          </button>
-          {/* Favorite button - right under settings button */}
-          {weather && onToggleFavorite && (
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onToggleFavorite();
-              }}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onToggleFavorite();
-              }}
-              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-              className={`fixed right-0 top-[76px] z-50 p-3 min-w-[44px] min-h-[44px] ${bgClass} border-l border-b ${borderClass} rounded-l-lg shadow-lg ${hoverClass} transition-all`}
-              aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-              type="button"
-            >
-              <span className={`text-xl ${isFavorite ? 'text-yellow-500' : textSecondary}`}>
-                {isFavorite ? '★' : '☆'}
-              </span>
-            </button>
-          )}
-        </>
+        <button
+          onClick={onToggleExpand}
+          className={`fixed right-0 top-4 z-50 p-3 ${bgClass} border-l border-b ${borderClass} rounded-l-lg shadow-lg ${hoverClass} transition-all`}
+          aria-label="Expand settings"
+        >
+          <span className={`text-xl ${textPrimary}`}>⚙️</span>
+        </button>
       )}
     </>
   );

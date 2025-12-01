@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import SearchBar from '@/components/SearchBar';
 import CurrentWeather from '@/components/CurrentWeather';
 import Forecast from '@/components/Forecast';
 import DayDetailModal from '@/components/DayDetailModal';
-import FavoritesList from '@/components/FavoritesList';
 import SettingsMenu from '@/components/SettingsMenu';
-import { WeatherData, ForecastData, DailyForecast, ForecastItem, FavoriteCity } from '@/types/weather';
+import { WeatherData, ForecastData, DailyForecast, ForecastItem } from '@/types/weather';
 
 export default function Home() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
@@ -22,30 +21,9 @@ export default function Home() {
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [selectedDay, setSelectedDay] = useState<DailyForecast | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [favorites, setFavorites] = useState<FavoriteCity[]>([]);
-  const [isFavoritesExpanded, setIsFavoritesExpanded] = useState<boolean>(false);
   const [isSettingsExpanded, setIsSettingsExpanded] = useState<boolean>(false);
-  const favoriteToggleRef = useRef<boolean>(false);
 
   const API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
-
-  // Load favorites from localStorage on mount
-  useEffect(() => {
-    const savedFavorites = localStorage.getItem('favorites');
-    if (savedFavorites) {
-      try {
-        const parsed = JSON.parse(savedFavorites);
-        setFavorites(parsed);
-      } catch (err) {
-        console.error('Error loading favorites:', err);
-      }
-    }
-  }, []);
-
-  // Save favorites to localStorage whenever favorites change
-  useEffect(() => {
-    localStorage.setItem('favorites', JSON.stringify(favorites));
-  }, [favorites]);
 
   // Load dark mode preference from localStorage
   useEffect(() => {
@@ -331,58 +309,6 @@ export default function Home() {
     setSelectedDay(null);
   };
 
-  const getCityId = (name: string, country: string, lat: number, lon: number): string => {
-    return `${name}-${country}-${lat.toFixed(4)}-${lon.toFixed(4)}`;
-  };
-
-  const handleToggleFavorite = useCallback(() => {
-    if (!weather) return;
-    
-    // Prevent rapid double-taps on mobile
-    if (favoriteToggleRef.current) return;
-    favoriteToggleRef.current = true;
-
-    const cityId = getCityId(weather.name, weather.sys.country, weather.coord.lat, weather.coord.lon);
-    
-    // Use functional update to ensure we're working with the latest state
-    setFavorites(prevFavorites => {
-      const isFavorite = prevFavorites.some(fav => fav.id === cityId);
-      
-      if (isFavorite) {
-        return prevFavorites.filter(fav => fav.id !== cityId);
-      } else {
-        const newFavorite: FavoriteCity = {
-          id: cityId,
-          name: weather.name,
-          country: weather.sys.country,
-          lat: weather.coord.lat,
-          lon: weather.coord.lon,
-        };
-        return [...prevFavorites, newFavorite];
-      }
-    });
-
-    // Reset the ref after a short delay to allow the next toggle
-    setTimeout(() => {
-      favoriteToggleRef.current = false;
-    }, 500);
-  }, [weather]);
-
-  const handleSelectFavorite = (city: FavoriteCity) => {
-    handleSearch(`${city.name}, ${city.country}`, city.lat, city.lon);
-  };
-
-  const handleRemoveFavorite = (id: string) => {
-    setFavorites(prevFavorites => prevFavorites.filter(fav => fav.id !== id));
-  };
-
-  const isCurrentCityFavorite = weather
-    ? (() => {
-        const cityId = getCityId(weather.name, weather.sys.country, weather.coord.lat, weather.coord.lon);
-        return favorites.some(fav => fav.id === cityId);
-      })()
-    : false;
-
   const bgClass = darkMode ? 'bg-gray-900' : '';
   const textPrimary = darkMode ? 'text-white' : 'text-gray-800';
   const textSecondary = darkMode ? 'text-gray-300' : 'text-gray-600';
@@ -392,16 +318,6 @@ export default function Home() {
 
   return (
     <main className={`min-h-screen py-8 px-4 transition-colors ${bgClass}`}>
-      <FavoritesList
-        favorites={favorites}
-        onSelectCity={handleSelectFavorite}
-        onRemoveFavorite={handleRemoveFavorite}
-        darkMode={darkMode}
-        unit={unit}
-        API_KEY={API_KEY}
-        isExpanded={isFavoritesExpanded}
-        onToggleExpand={() => setIsFavoritesExpanded(!isFavoritesExpanded)}
-      />
       <SettingsMenu
         unit={unit}
         speedUnit={speedUnit}
@@ -411,11 +327,8 @@ export default function Home() {
         onDarkModeChange={setDarkMode}
         isExpanded={isSettingsExpanded}
         onToggleExpand={() => setIsSettingsExpanded(!isSettingsExpanded)}
-        isFavorite={isCurrentCityFavorite}
-        onToggleFavorite={handleToggleFavorite}
-        weather={weather}
       />
-      <div className={`max-w-6xl mx-auto ${favorites.length > 0 && isFavoritesExpanded ? 'lg:ml-64' : ''} ${isSettingsExpanded ? 'lg:mr-64' : ''} transition-all duration-300`}>
+      <div className={`max-w-6xl mx-auto ${isSettingsExpanded ? 'lg:mr-64' : ''} transition-all duration-300`}>
         <div className="text-center mb-8">
           <h1 className={`text-5xl font-bold mb-2 ${textPrimary}`}>Forecastly</h1>
           <p className={textSecondary}>Search for any city to see current weather and 5-day forecast</p>
