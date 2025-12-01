@@ -1,7 +1,7 @@
 'use client';
 
 import { WeatherData } from '@/types/weather';
-import { convertTemp, getTempSymbol, convertWindSpeed, formatDate, formatTime, getAqiLabel, getAqiColor, getUvLabel, getUvColor } from '@/utils/weather';
+import { convertTemp, getTempSymbol, convertWindSpeed, formatDate, formatTime } from '@/utils/weather';
 import { getDarkModeClasses } from '@/utils/styles';
 
 interface CurrentWeatherProps {
@@ -11,11 +11,9 @@ interface CurrentWeatherProps {
   darkMode: boolean;
   onViewHourly?: () => void;
   hasHourlyData?: boolean;
-  aqi?: number | null;
-  uvIndex?: number | null;
 }
 
-export default function CurrentWeather({ weather, unit, speedUnit, darkMode, onViewHourly, hasHourlyData, aqi, uvIndex }: CurrentWeatherProps) {
+export default function CurrentWeather({ weather, unit, speedUnit, darkMode, onViewHourly, hasHourlyData }: CurrentWeatherProps) {
   const styles = getDarkModeClasses(darkMode);
   const temp = convertTemp(weather.main.temp, unit);
   const feelsLike = convertTemp(weather.main.feels_like, unit);
@@ -84,24 +82,6 @@ export default function CurrentWeather({ weather, unit, speedUnit, darkMode, onV
               {windSpeed}
             </div>
           </div>
-          {aqi !== null && aqi !== undefined && (
-            <div className={`${bgCard} rounded-lg p-4 text-center`}>
-              <div className={`text-sm mb-1 ${textSecondary}`}>Air Quality</div>
-              <div className={`text-2xl font-semibold ${getAqiColor(aqi)}`}>
-                {getAqiLabel(aqi)}
-              </div>
-              <div className={`text-xs mt-1 ${textSecondary}`}>AQI: {aqi}</div>
-            </div>
-          )}
-          {uvIndex !== null && uvIndex !== undefined && (
-            <div className={`${bgCard} rounded-lg p-4 text-center`}>
-              <div className={`text-sm mb-1 ${textSecondary}`}>UV Index</div>
-              <div className={`text-2xl font-semibold ${getUvColor(uvIndex)}`}>
-                {uvIndex.toFixed(1)}
-              </div>
-              <div className={`text-xs mt-1 ${textSecondary}`}>{getUvLabel(uvIndex)}</div>
-            </div>
-          )}
           <div className={`${bgCard} rounded-lg p-4 text-center`}>
             <div className={`text-sm mb-1 ${textSecondary}`}>Sunrise</div>
             <div className={`text-xl font-semibold ${textPrimary}`}>

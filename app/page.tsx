@@ -13,8 +13,6 @@ export default function Home() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [forecast, setForecast] = useState<DailyForecast[]>([]);
   const [todayForecast, setTodayForecast] = useState<DailyForecast | null>(null);
-  const [aqi, setAqi] = useState<number | null>(null);
-  const [uvIndex, setUvIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [unit, setUnit] = useState<'celsius' | 'fahrenheit'>('celsius');
@@ -142,38 +140,6 @@ export default function Home() {
 
       const weatherData: WeatherData = await weatherResponse.json();
 
-      // Fetch AQI and UV index using coordinates from weather data
-      const weatherLat = weatherData.coord.lat;
-      const weatherLon = weatherData.coord.lon;
-      
-      try {
-        // Fetch Air Quality Index
-        const aqiResponse = await fetch(
-          `https://api.openweathermap.org/data/2.5/air_pollution?lat=${weatherLat}&lon=${weatherLon}&appid=${API_KEY}`
-        );
-        if (aqiResponse.ok) {
-          const aqiData = await aqiResponse.json();
-          setAqi(aqiData.list[0]?.main?.aqi || null);
-        }
-      } catch (err) {
-        console.error('Error fetching AQI:', err);
-        setAqi(null);
-      }
-
-      try {
-        // Fetch UV Index
-        const uvResponse = await fetch(
-          `https://api.openweathermap.org/data/2.5/uv?lat=${weatherLat}&lon=${weatherLon}&appid=${API_KEY}`
-        );
-        if (uvResponse.ok) {
-          const uvData = await uvResponse.json();
-          setUvIndex(uvData.value || null);
-        }
-      } catch (err) {
-        console.error('Error fetching UV index:', err);
-        setUvIndex(null);
-      }
-
       // Fetch 5-day forecast using coordinates if available
       const forecastUrl = lat !== undefined && lon !== undefined
         ? `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
@@ -249,8 +215,6 @@ export default function Home() {
       setWeather(null);
       setForecast([]);
       setTodayForecast(null);
-      setAqi(null);
-      setUvIndex(null);
     } finally {
       setIsLoading(false);
     }
@@ -327,8 +291,6 @@ export default function Home() {
               darkMode={darkMode}
               onViewHourly={handleTodayClick}
               hasHourlyData={todayForecast !== null}
-              aqi={aqi}
-              uvIndex={uvIndex}
             />
             {forecast.length > 0 && (
               <Forecast
