@@ -23,7 +23,7 @@ export default function Home() {
   const [selectedDay, setSelectedDay] = useState<DailyForecast | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [favorites, setFavorites] = useState<FavoriteCity[]>([]);
-  const [isFavoritesExpanded, setIsFavoritesExpanded] = useState<boolean>(true);
+  const [isFavoritesExpanded, setIsFavoritesExpanded] = useState<boolean>(false);
   const [isSettingsExpanded, setIsSettingsExpanded] = useState<boolean>(false);
   const favoriteToggleRef = useRef<boolean>(false);
 
@@ -411,6 +411,9 @@ export default function Home() {
         onDarkModeChange={setDarkMode}
         isExpanded={isSettingsExpanded}
         onToggleExpand={() => setIsSettingsExpanded(!isSettingsExpanded)}
+        isFavorite={isCurrentCityFavorite}
+        onToggleFavorite={handleToggleFavorite}
+        weather={weather}
       />
       <div className={`max-w-6xl mx-auto ${favorites.length > 0 && isFavoritesExpanded ? 'lg:ml-64' : ''} ${isSettingsExpanded ? 'lg:mr-64' : ''} transition-all duration-300`}>
         <div className="text-center mb-8">
@@ -440,8 +443,6 @@ export default function Home() {
               unit={unit}
               speedUnit={speedUnit}
               darkMode={darkMode}
-              isFavorite={isCurrentCityFavorite}
-              onToggleFavorite={handleToggleFavorite}
               onViewHourly={handleTodayClick}
               hasHourlyData={todayForecast !== null}
             />

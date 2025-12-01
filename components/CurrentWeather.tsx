@@ -1,6 +1,5 @@
 'use client';
 
-import { useRef } from 'react';
 import { WeatherData } from '@/types/weather';
 
 interface CurrentWeatherProps {
@@ -8,33 +7,15 @@ interface CurrentWeatherProps {
   unit: 'celsius' | 'fahrenheit';
   speedUnit: 'kmh' | 'mph';
   darkMode: boolean;
-  isFavorite: boolean;
-  onToggleFavorite: () => void;
   onViewHourly?: () => void;
   hasHourlyData?: boolean;
   aqi?: number | null;
   uvIndex?: number | null;
 }
 
-export default function CurrentWeather({ weather, unit, speedUnit, darkMode, isFavorite, onToggleFavorite, onViewHourly, hasHourlyData, aqi, uvIndex }: CurrentWeatherProps) {
-  const lastTapRef = useRef(0);
-
+export default function CurrentWeather({ weather, unit, speedUnit, darkMode, onViewHourly, hasHourlyData, aqi, uvIndex }: CurrentWeatherProps) {
   const convertTemp = (temp: number): number => {
     return unit === 'fahrenheit' ? (temp * 9) / 5 + 32 : temp;
-  };
-
-  const handleFavoriteClick = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // Prevent double-tap on mobile
-    const now = Date.now();
-    if (now - lastTapRef.current < 500) {
-      return;
-    }
-    lastTapRef.current = now;
-    
-    onToggleFavorite();
   };
 
   const formatDate = (timestamp: number): string => {
@@ -123,20 +104,6 @@ export default function CurrentWeather({ weather, unit, speedUnit, darkMode, isF
             Hourly
           </button>
         )}
-        <button
-          onTouchEnd={handleFavoriteClick}
-          onClick={handleFavoriteClick}
-          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-          className={`absolute top-0 right-0 p-3 min-w-[44px] min-h-[44px] rounded-lg transition-colors z-10 ${
-            darkMode ? 'hover:bg-gray-700 active:bg-gray-600' : 'hover:bg-gray-100 active:bg-gray-200'
-          }`}
-          aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-          type="button"
-        >
-          <span className={`text-3xl ${isFavorite ? 'text-yellow-500' : textSecondary}`}>
-            {isFavorite ? '★' : '☆'}
-          </span>
-        </button>
         <h2 className={`text-3xl font-bold mb-2 ${textPrimary}`}>
           {weather.name}, {weather.sys.country}
         </h2>
