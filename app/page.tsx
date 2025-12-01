@@ -76,7 +76,7 @@ export default function Home() {
       dailyData[date].push(item);
     });
 
-    // Filter out today, sort dates chronologically, and get the next 5 future days
+    // Filter out today, sort dates chronologically, and get the next 5 future days.
     const futureDates = Object.keys(dailyData)
       .filter(date => date !== today)
       .sort((a, b) => {
