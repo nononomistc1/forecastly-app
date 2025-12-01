@@ -335,7 +335,7 @@ export default function Home() {
     return `${name}-${country}-${lat.toFixed(4)}-${lon.toFixed(4)}`;
   };
 
-  const handleToggleFavorite = () => {
+  const handleToggleFavorite = useCallback(() => {
     if (!weather) return;
     
     // Prevent rapid double-taps on mobile
@@ -343,26 +343,30 @@ export default function Home() {
     favoriteToggleRef.current = true;
 
     const cityId = getCityId(weather.name, weather.sys.country, weather.coord.lat, weather.coord.lon);
-    const isFavorite = favorites.some(fav => fav.id === cityId);
-
-    if (isFavorite) {
-      setFavorites(prevFavorites => prevFavorites.filter(fav => fav.id !== cityId));
-    } else {
-      const newFavorite: FavoriteCity = {
-        id: cityId,
-        name: weather.name,
-        country: weather.sys.country,
-        lat: weather.coord.lat,
-        lon: weather.coord.lon,
-      };
-      setFavorites(prevFavorites => [...prevFavorites, newFavorite]);
-    }
+    
+    // Use functional update to ensure we're working with the latest state
+    setFavorites(prevFavorites => {
+      const isFavorite = prevFavorites.some(fav => fav.id === cityId);
+      
+      if (isFavorite) {
+        return prevFavorites.filter(fav => fav.id !== cityId);
+      } else {
+        const newFavorite: FavoriteCity = {
+          id: cityId,
+          name: weather.name,
+          country: weather.sys.country,
+          lat: weather.coord.lat,
+          lon: weather.coord.lon,
+        };
+        return [...prevFavorites, newFavorite];
+      }
+    });
 
     // Reset the ref after a short delay to allow the next toggle
     setTimeout(() => {
       favoriteToggleRef.current = false;
-    }, 300);
-  };
+    }, 500);
+  }, [weather]);
 
   const handleSelectFavorite = (city: FavoriteCity) => {
     handleSearch(`${city.name}, ${city.country}`, city.lat, city.lon);

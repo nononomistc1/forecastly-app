@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef } from 'react';
 import { WeatherData } from '@/types/weather';
 
 interface CurrentWeatherProps {
@@ -16,8 +17,24 @@ interface CurrentWeatherProps {
 }
 
 export default function CurrentWeather({ weather, unit, speedUnit, darkMode, isFavorite, onToggleFavorite, onViewHourly, hasHourlyData, aqi, uvIndex }: CurrentWeatherProps) {
+  const lastTapRef = useRef(0);
+
   const convertTemp = (temp: number): number => {
     return unit === 'fahrenheit' ? (temp * 9) / 5 + 32 : temp;
+  };
+
+  const handleFavoriteClick = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Prevent double-tap on mobile
+    const now = Date.now();
+    if (now - lastTapRef.current < 500) {
+      return;
+    }
+    lastTapRef.current = now;
+    
+    onToggleFavorite();
   };
 
   const formatDate = (timestamp: number): string => {
@@ -107,15 +124,9 @@ export default function CurrentWeather({ weather, unit, speedUnit, darkMode, isF
           </button>
         )}
         <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onToggleFavorite();
-          }}
-          onTouchStart={(e) => {
-            e.stopPropagation();
-          }}
-          style={{ touchAction: 'manipulation' }}
+          onTouchEnd={handleFavoriteClick}
+          onClick={handleFavoriteClick}
+          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
           className={`absolute top-0 right-0 p-3 min-w-[44px] min-h-[44px] rounded-lg transition-colors z-10 ${
             darkMode ? 'hover:bg-gray-700 active:bg-gray-600' : 'hover:bg-gray-100 active:bg-gray-200'
           }`}
